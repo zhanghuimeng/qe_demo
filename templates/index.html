@@ -1,0 +1,109 @@
+{% extends "bootstrap/base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block title %}Quality Estimation Demo{% endblock %}
+{% block styles %}
+{{super()}}
+<link rel="stylesheet"
+      href="{{ url_for('.static', filename='index.css') }}">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="{{ url_for('.static', filename='index.js') }}"></script>
+{% endblock %}
+{% block content %}
+    <div class="main-div">
+        <h1>Quality Estimation Demo</h1>
+        <form class="form form-horizontal" method="post" action="/">
+            {{ form.csrf_token }}
+            <!--能用但是不bootstrap-->
+            <!--<div class="form-group">-->
+                <!--<label class="col-sm-2 control-label">{{ form.src.label }}</label>-->
+                <!--<div class="col-sm-10">-->
+                    <!--{{ form.src() }}-->
+                <!--</div>-->
+            <!--</div>-->
+            <div class="form-group">
+                <label class="col-sm-2 control-label">{{ form.src.label }}</label>
+                <div class="col-sm-10">
+                    {{ form.src(class='form-control', id='src') }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">{{ form.mt.label }}</label>
+                <div class="col-sm-10">
+                    {{ form.mt(class='form-control', id='mt') }}
+                    <!--Bootstrap但是定制度不够-->
+                    <!--{{ wtf.form_field(form.mt) }}-->
+                </div>
+            </div>
+            <!--可以用来load的内容-->
+            <!--<div class="form-group">-->
+                <!--<label class="col-sm-2 control-label" for="pe">pe</label>-->
+                <!--<div class="col-sm-10">-->
+                    <!--<input type="text" class="form-control" readonly="readonly" id="pe">-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--<div class="form-group">-->
+                <!--<label class="col-sm-2 control-label" for="hter">HTER</label>-->
+                <!--<div class="col-sm-10">-->
+                    <!--<input type="text" class="form-control" readonly="readonly" id="hter">-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--修改成了和flask有关的内容-->
+            <div class="form-group">
+                <label class="col-sm-2 control-label">{{ form.pe.label }}</label>
+                <div class="col-sm-10">
+                    {{ form.pe(class='form-control', id='pe', readonly="readonly") }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">{{ form.hter.label }}</label>
+                <div class="col-sm-10">
+                    {{ form.hter(class='form-control', id='hter', readonly="readonly") }}
+                </div>
+            </div>
+            <input type="submit" value="Submit" />
+        </form>
+
+        <hr />
+
+        {% if birnn_qe_score %}
+        <p>BiRNN QE score = {{birnn_qe_score}}</p>
+        {% endif %}
+        {% if openkiwi_qe_score %}
+        <p>OpenKiwi QE score = {{openkiwi_qe_score}}</p>
+        {% endif %}
+
+        <h2>Test Data</h2>
+
+        <!--测试数据-->
+        <!--{{ pagination.links }}-->
+        <table class="table" id="test-data-table">
+            <thead>
+                <tr>
+                    <th class="text-center">line number</th>
+                    <th class="text-center">Source sentence</th>
+                    <th class="text-center">Machine translation</th>
+                    <th class="text-center">Post edited translation</th>
+                    <th class="text-center">HTER</th>
+                    <th class="text-center">#</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for test in test_data %}
+                <tr>
+                    <td>{{ test.number }}</td>
+                    <td>{{ test.src }}</td>
+                    <td>{{ test.mt }}</td>
+                    <td>{{ test.pe }}</td>
+                    <td>{{ test.hter }}</td>
+                    <td>
+                        <!--注意index的减号-->
+                        <input type="submit" name="load-test-data-{{ test.number }}"
+                               value="load" onclick="loadTestData({{ loop.index - 1}})" />
+                    </td>
+                </tr>
+                {% endfor %}
+          </tbody>
+        </table>
+        {{ pagination.links }}
+    </div>
+{% endblock %}
