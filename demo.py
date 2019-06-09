@@ -13,10 +13,11 @@ from collections import namedtuple
 
 from qe.qe_test import test as birnn_test
 
-
 app = Flask(__name__)
 Bootstrap(app)
 app.config['SECRET_KEY'] = 'any secret string'
+app.config['TEST_PER_PAGE'] = 5
+
 default_src = "If you are creating multiple files , you can enter common metadata for all of the files ."
 default_mt = "Wenn Sie mehrere Dateien erstellen , können Sie die allgemeinen Metadaten für alle Dateien eingeben ."
 
@@ -25,12 +26,14 @@ kiwi_model_dir = "model/en_de.smt_models/estimator/target_1"
 kiwi_out_dir = "tmp_out"
 kiwi_src_file = "temp_src.txt"
 kiwi_mt_file = "temp_mt.txt"
-kiwi_command = "kiwi predict --config demo/predict.yaml " \
+kiwi_command = "source activate py3 && " \
+               "kiwi predict --config predict.yaml " \
                "--load-model %s/model.torch " \
                "--output-dir %s " \
                "--gpu-id -1 " \
                "--test-source %s " \
-               "--test-target %s "
+               "--test-target %s " \
+               "&& deactivate"
 
 test_dir = "data/qe-2017/"
 test_src_file = test_dir + "test.src"
@@ -67,10 +70,13 @@ def get_test_data(offset=0, per_page=5):
 @app.route('/', methods=('GET', 'POST'))
 def submit():
     # pagination
-    page, per_page, offset = get_page_args(page_parameter='page', per_page_parameter='per_page')
+    page, per_page, offset = get_page_args(page_parameter='page', per_page_parameter='test_per_page')
+    print(page, per_page, offset)
     total = len(test_data)
     pagination_test_data = get_test_data(offset=offset, per_page=per_page)
     pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap3')
+
+    print("submitted")
 
     form = QeForm()
     if form.validate_on_submit():
@@ -92,15 +98,15 @@ def submit():
         command = kiwi_command % (kiwi_model_dir, kiwi_out_dir, kiwi_src_file, kiwi_mt_file)
         print(command)
         kiwi_score = None
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, executable="/bin/bash")
         process.wait()
         print(process.returncode)
         if process.returncode == 0:
             with open(kiwi_out_dir + "/sentence_scores", 'r') as f:
                 kiwi_score = float(f.read())
             shutil.rmtree(kiwi_out_dir)
-        os.remove(kiwi_src_file)
-        os.remove(kiwi_mt_file)
+            os.remove(kiwi_src_file)
+            os.remove(kiwi_mt_file)
         return render_template('index.html', form=form,
                                birnn_qe_score=pred,
                                openkiwi_qe_score=kiwi_score,

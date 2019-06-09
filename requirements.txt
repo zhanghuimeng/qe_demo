@@ -1,0 +1,5 @@
+openkiwi
+flask
+Flask-WTF
+flask-bootstrap
+flask_paginate

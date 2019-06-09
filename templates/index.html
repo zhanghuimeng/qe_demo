@@ -11,7 +11,7 @@
 {% block content %}
     <div class="main-div">
         <h1>Quality Estimation Demo</h1>
-        <form class="form form-horizontal" method="post" action="/">
+        <form class="form form-horizontal" method="post" action="{{url_for('submit')}}">
             {{ form.csrf_token }}
             <!--能用但是不bootstrap-->
             <!--<div class="form-group">-->

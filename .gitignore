@@ -5,6 +5,7 @@ data/*
 kiwi_**/*
 *.gz
 *.hter
+**env/
 
 # Compiled source #
 ###################
